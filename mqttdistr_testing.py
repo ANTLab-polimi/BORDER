@@ -5,6 +5,7 @@ from mininet.net import Containernet
 from mininet.node import Controller
 from mininet.cli import CLI
 from mininet.node import Node
+from mininet.node import OVSKernelSwitch, UserSwitch
 from mininet.link import TCLink
 from mininet.log import debug, info, error, setLogLevel
 import argparse
@@ -80,7 +81,7 @@ class MyRouter:
         self.routing_binding.append(bind)
 
     def add_switch(self):
-        self.switch = net.addSwitch('s{}'.format(self.id))
+        self.switch = net.addSwitch('s{}'.format(self.id), cls=OVSKernelSwitch)
         net.addLink(self.switch, self.router,
                     intfName=self.get_eth(),
                     params2={'ip': self.mainIP})
@@ -274,7 +275,7 @@ def start_plusdistr(container):
                          defaultRoute='via {}'.format(container.default_route),
                          dimage=IMAGES["DISTRPLUS"],
                          ports=[(1883+container.id)],
-                         port_bindings={(1883+container.id): container.bind_port},
+                         port_bindings={(1883+container.id): (container.bind_port+3)},
                          mem_limit=container.ram,
                          cpuset_cpus=container.cpu,
                          environment={
@@ -432,8 +433,10 @@ def main():
     time.sleep(args.router_delay / 2)
 
     info('\n killing net')
-    for c in container_list:
+    for i, c in enumerate(container_list):
         c.cmd("ip link set eth0 down")
+        c.cmd("route add -net default dev plusdistr{}-eth0".format(i))
+
 
     if not args.no_clients:
         for s, p in zip(sub_list, pub_list):
