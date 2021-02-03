@@ -32,6 +32,8 @@ def arg_parse():
                         help='broker host name (e.g. 10.0.0.100)')
     parser.add_argument('-t', '--topic', dest='topic', default='test',
                         help='mqtt topic')
+    parser.add_argument('-p', '--port', dest='port', default='1883',
+                        help='mqtt port')
     parser.add_argument('-q', '--qos', dest='qos', default=2,
                         help='mqtt quality of service', type=int)
     parser.add_argument('-m', '--number-messages', dest='msg_num', default=20,
@@ -50,9 +52,10 @@ def arg_parse():
 def main():
     for cl in range(0, args.clients_num):
         f = open(args.folder + "/e2e_c{}{}".format(cl, file_name), "w")
-        mosquitto_cmd = "mosquitto_sub -h {host} -p 1883 -t {topic} -q {qos} -v | ts '%.s'".format(host=args.host,
-                                                                                                   topic=args.topic,
-                                                                                                   qos=args.qos)
+        mosquitto_cmd = "mosquitto_sub -h {host} -p {port} -t {topic} -q {qos} -v | ts '%.s'".format(host=args.host,
+                                                                                                     port=args.port,
+                                                                                                     topic=args.topic,
+                                                                                                     qos=args.qos)
         mosq_pid.append(subprocess.Popen(mosquitto_cmd, stdout=f, shell=True, preexec_fn=os.setsid))
         file_out.append(f)
 

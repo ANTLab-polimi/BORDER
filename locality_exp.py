@@ -43,6 +43,8 @@ def arg_parse():
                         help='number of subscribers', type=int)
     parser.add_argument('-t', '--type', dest='BROKER_TYPE', required=True,
                         help='Cluster type')
+    parser.add_argument('-p', '--port', dest='port', default='1883',
+                        help='mqtt broker port')
     parser.add_argument('-n', '--sim-number', dest='SIMULATIONS', default=1,
                         help='number of iterations', type=int)
     parser.add_argument('--speed', dest='DELAY', default=10,
@@ -109,7 +111,7 @@ def start_tcpdump(_path):
     return _tcp_pid
 
 
-def start_clients(_subscribers, _publisher, _qos, _path, _file_name):
+def start_clients(_subscribers, _publisher, _port, _qos, _path, _file_name):
     if args.no_clients:
         print("no clients, waiting...")
         time.sleep(CLIENTS_CREATION)
@@ -117,8 +119,9 @@ def start_clients(_subscribers, _publisher, _qos, _path, _file_name):
         random.shuffle(_subscribers)
         for indx, sub in enumerate(_subscribers):
             subscriber_cmd = "docker exec -d mn.sub{id} python3 mosquitto_sub.py -h 10.0.{id}.100 " \
-                             "-t {topic} -q {qos} -m {msg} -c {clients} --folder {folder} --file-name {name}".format(
+                             "-t {topic} -p {port} -q {qos} -m {msg} -c {clients} --folder {folder} --file-name {name}".format(
                 id=sub,
+                port=_port,
                 topic=topic_name,
                 qos=_qos,
                 msg=NUM_MESSAGES,
@@ -133,10 +136,11 @@ def start_clients(_subscribers, _publisher, _qos, _path, _file_name):
 
     print("Creating publisher {id}...".format(id=_publisher))
 
-    publisher_cmd = "docker exec -t mn.pub{id_pub} mqtt-benchmark --broker tcp://10.0.{id_pub}.100:1883 " \
+    publisher_cmd = "docker exec -t mn.pub{id_pub} mqtt-benchmark --broker tcp://10.0.{id_pub}.100:{port} " \
                     "--topic {topic} --clients {clients} --count {msg} --qos {qos} --delay {rate} " \
                     "--folder {folder} --file-name {name}".format(
         id_pub=_publisher,
+        port=_port,
         topic=topic_name,
         qos=_qos,
         msg=NUM_MESSAGES,
@@ -187,7 +191,7 @@ def simulation(sim_num):
 
             time.sleep(DELAY / 5)
 
-            start_clients(sub_list, publisher, q, path, file_name)
+            start_clients(sub_list, publisher, args.port, q, path, file_name)
 
             print("\n>>> Simulation number {}. {}% locality - {} qos - pub {} - sub {}... DONE\n".format(
                 sim_num, loc, q, NUM_PUBLISHERS, NUM_SUBSCRIBERS))
