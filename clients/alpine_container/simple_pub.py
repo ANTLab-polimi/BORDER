@@ -8,6 +8,7 @@ def arg_parse():
     parser = argparse.ArgumentParser(description='MQTT simple publisher', add_help=False)
     parser.add_argument('-h', '--host', dest='host', default='10.0.1.100',
                         help='broker host name (e.g. 10.0.0.100)')
+    parser.add_argument('-p', '--port', dest='port', default = '10.0.0.251')
     parser.add_argument('-t', '--topic', dest='topic', default='test',
                         help='mqtt topic')
     parser.add_argument('-q', '--qos', dest='qos', default=2,
@@ -22,7 +23,7 @@ def arg_parse():
 def main():
     client = mqtt.Client()
 
-    client.connect(args.host)
+    client.connect(args.host, args.port)
     print("Connected to {}\n".format(args.host))
     for i in range(0, args.msg_num):
         now = datetime.now().strftime("%H:%M:%S.%f")[:-3]

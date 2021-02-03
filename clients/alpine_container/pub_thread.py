@@ -12,6 +12,8 @@ def arg_parse():
     parser = argparse.ArgumentParser(description='MQTT thread publisher', add_help=False)
     parser.add_argument('-h', '--host', dest='host', default='10.0.1.100',
                         help='broker host name (e.g. 10.0.0.100)')
+    parser.add_argument('-p', '--port', dest='port', default=1883,
+                        help='the port on which the broker is listening for mqtt messages')
     parser.add_argument('-t', '--topic', dest='topic', default='test',
                         help='mqtt topic')
     parser.add_argument('-q', '--qos', dest='qos', default=2,
@@ -46,7 +48,7 @@ class Sender(threading.Thread):
             self.is_running = False
 
     def run(self):
-        self.client.connect(args.host)
+        self.client.connect(args.host, args.port)
         print("Client {} connected to {}".format(self.client._client_id, args.host))
 
         self.publish_periodic()
