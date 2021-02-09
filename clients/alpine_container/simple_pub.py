@@ -24,7 +24,7 @@ def main():
     client = mqtt.Client()
 
     client.connect(args.host, args.port)
-    print("Connected to {}\n".format(args.host))
+    print("Connected to {}:{}\n".format(args.host, args.port))
     for i in range(0, args.msg_num):
         now = datetime.now().strftime("%H:%M:%S.%f")[:-3]
         client.publish(args.topic, str(now), qos=args.qos)
