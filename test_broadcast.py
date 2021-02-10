@@ -58,6 +58,7 @@ sub_loc = []
 dump_pids = []
 stats =[]
 
+
 ops = ['$AVG', '$SUM', '$MIN', '$MAX']
 
 def arg_parse():
@@ -137,7 +138,7 @@ def start_subscribers():
             topic='/room/+/temp',
             ind = index
         )
-        os.system(publisher_cmd)
+        subprocess.Popen(shlex.split(publisher_cmd), stderr=subprocess.DEVNULL)
 
 def setup_files():
     path = "experiments/{day}/{minute}/{distr}/{local}locality/".format(
@@ -203,13 +204,15 @@ def main():
         else:
             val = random.randint(0, args.num_broker - 1)
             pub_loc.append(val)
+    val_sub = random.randint(0, args.num_broker - 1)
+    while val_sub == val:
+        val_sub = random.randint(0, args.num_broker - 1)
 
     for index in range(0, 5):
         if(args.locality == 'TOTAL'):
             sub_loc.append(pub_loc[0])
         elif(args.locality == 'NULL'):
-            sub_loc.append(random.choice([
-        i for i in range(0, args.num_broker) if i not in pub_loc[index]]))
+            sub_loc.append(val_sub)
         else:
             val = random.randint(0, args.num_broker - 1)
             sub_loc.append(val)
